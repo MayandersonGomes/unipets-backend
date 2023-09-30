@@ -4,15 +4,12 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from django.contrib.sites.shortcuts import get_current_site
 from django.db import transaction
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
-from django.utils.encoding import force_bytes, force_str
-from django.contrib.auth.tokens import default_token_generator
-from django.template import loader
+from django.contrib.auth import authenticate
 from .models import UserProfile
 from .serializers import UserProfileSerializer
 from .filters import FilterUserProfileViewSet
+from rest_framework.authtoken.models import Token
 
 
 class UserProfileViewSet(ModelViewSet):
@@ -23,11 +20,11 @@ class UserProfileViewSet(ModelViewSet):
     filter_backends = [FilterUserProfileViewSet]
 
     def get_permissions(self):
-        if self.action == 'create':
+        if self.action in ['create', 'auth']:
             return [AllowAny()]
         return super(UserProfileViewSet, self).get_permissions()
 
-    def create(self, request, *args, **kwargs):
+    def create(self, request):
         data = request.data
         try:
             with transaction.atomic():
@@ -66,3 +63,18 @@ class UserProfileViewSet(ModelViewSet):
 
         except Exception:
             return Response({'message': 'Houve um erro ao finalizar seu cadastro!'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    @action(methods=['POST'], detail=False)
+    def auth(self, request):
+        data = request.data
+        try:
+            user = authenticate(request, username=data['email'], password=data['password'])
+            if user and user.is_active:
+                token = Token.objects.get_or_create(user=user)
+                serializer = self.serializer_class(user)
+                return Response({'message': 'Login realizado com sucesso!', 'token': token[0].key, 'user': serializer.data}, status=status.HTTP_200_OK)
+            if UserProfile.objects.filter(email=data['email'], is_active=False).exists():
+                return Response({'message': 'Por favor, confirme seu email para ativar seu usuário!'}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({'message': 'Email e/ou senha inválidos!'}, status=status.HTTP_401_UNAUTHORIZED)
+        except Exception:
+            return Response({'message': 'Erro ao realizar login!'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
