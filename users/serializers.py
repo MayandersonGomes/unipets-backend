@@ -7,5 +7,5 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserProfile
-        fields = ['username', 'name', 'cpf_cnpj', 'birthday', 'email', 'password']
+        fields = ['username', 'first_name', 'last_name', 'cpf_cnpj', 'birthday', 'email', 'password']
 

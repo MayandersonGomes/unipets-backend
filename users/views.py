@@ -29,6 +29,7 @@ class UserProfileViewSet(ModelViewSet):
         try:
             with transaction.atomic():
                 username = data['username']
+                name = data['name'].split(' ', 1)
                 email = data['email']
                 cpf_cnpj = data['cpf_cnpj']
 
@@ -49,8 +50,8 @@ class UserProfileViewSet(ModelViewSet):
                     )
 
                 user = UserProfile.objects.create(
-                    username=username, name=data['name'], birthday=data['birthday'],
-                    email=email, cpf_cnpj=cpf_cnpj, is_active=False
+                    username=username, first_name=name[0], last_name=name[1] if len(name) > 1 else '',
+                    birthday=data['birthday'], email=email, cpf_cnpj=cpf_cnpj, is_active=False
                 )
                 user.set_password(data['password'])
                 user.save()
@@ -63,7 +64,7 @@ class UserProfileViewSet(ModelViewSet):
 
         except Exception:
             return Response({'message': 'Houve um erro ao finalizar seu cadastro!'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    
+
     @action(methods=['POST'], detail=False)
     def auth(self, request):
         data = request.data
