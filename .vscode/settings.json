@@ -9,4 +9,8 @@
   "[python]": {
     "editor.defaultFormatter": "ms-python.autopep8"
   },
+  "editor.inlineSuggest.showToolbar": "always",
+  "conventionalCommits.scopes": [
+    "Teste"
+  ],
 }

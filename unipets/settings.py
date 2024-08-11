@@ -47,6 +47,7 @@ LOCAL_APPS = [
 THIRD_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
+    'drf_spectacular',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + LOCAL_APPS + THIRD_APPS
@@ -132,3 +133,17 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'users.UserProfile'
+
+REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Unipets API',
+    'DESCRIPTION': '''Bem-vindo à documentação detalhada da API Unipets,
+        um componente essencial do aplicativo dedicado à adoção responsável
+        de animais. Abaixo, você encontrará informações detalhadas sobre cada
+        endpoint, suas funcionalidades e os parâmetros aceitos.''',
+    'VERSION': '0.1.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+}
